@@ -275,6 +275,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
                             this.DrawBonesAndJoints(skel, dc);
+                          
                         }
                         else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                         {
@@ -323,6 +324,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft);
             this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft);
             this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft);
+
+            //show x/y of wrist
+            this.DrawCoordinates(skeleton, drawingContext, JointType.HandRight);
+
 
             // Right Leg
             this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight);
@@ -400,6 +405,39 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
         }
+
+
+        private void DrawCoordinates(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0)
+        {
+            Joint joint0 = skeleton.Joints[jointType0];
+
+            // If we can't find either of these joints, exit
+            if (joint0.TrackingState == JointTrackingState.NotTracked)
+            {
+                return;
+            }
+
+            // Don't draw if both points are inferred
+            if (joint0.TrackingState == JointTrackingState.Inferred)
+            {
+                return;
+            }
+
+            // We assume all drawn bones are inferred unless BOTH joints are tracked
+            Pen drawPen = this.inferredBonePen;
+            if (joint0.TrackingState == JointTrackingState.Tracked)
+            {
+                drawPen = this.trackedBonePen;
+            }
+
+        
+            //drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
+            var coord = this.SkeletonPointToScreen(joint0.Position);
+            drawingContext.DrawText(new FormattedText(string.Format("({0},{1})", coord.X, coord.Y),
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    System.Windows.FlowDirection.LeftToRight, new Typeface("Arial"), 16, Brushes.Black), coord);
+        }
+
 
         /// <summary>
         /// Handles the checking or unchecking of the seated mode combo box
